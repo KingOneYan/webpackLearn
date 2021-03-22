@@ -13,12 +13,10 @@
  */
 import './index.css'
 import './index.less'
+import './icon-font/iconfont.css'
 import data from './data'
-
-console.log(data);
-
 function add(x,y) {
     return x+y
 }
-
+// console.log(data);
 console.log(add(1,2))

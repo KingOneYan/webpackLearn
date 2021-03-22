@@ -51,30 +51,38 @@ module.exports = {
                 test: /\.(jpg|png|gif)$/,
                 //使用一个loader
                 //下载两个包，url-loader,file-loader
-                loader:'url-loader',
-                options:{
+                loader: 'url-loader',
+                options: {
                     //图片大小小于8kb，就会被base64处理
                     //优点:减少请求数量(降低服务器请求压力)
                     //缺点:图片体积会更大(文件请求速度更慢)
                     //因此一般8-12kb使用base64解析会比较好
-                    limit:8*1024,
+                    limit: 8 * 1024,
                     //问题：因为url-loader默认使用es6模块化解析，而html-loader引入图片是commonjs
                     //解析会出问题：[object Module]
                     //解决:关闭url-loader的es6模块话，使用commonjs解析
-                    //ps：新版本微博webpack已经解决了这个问题，但是会出现图片路径无法识别的问题(oﾟvﾟ)ノ
+                    //ps：新版本webpack已经解决了这个问题，但是会出现图片路径无法识别的问题(oﾟvﾟ)ノ
                     //解决方案：在html-loader与url-loader都配置esModule:false
-                    esModule:false,
+                    esModule: false,
                     //给图片重命名
                     //[hash:10]去图片的hash前10位
-                    name:'[hash:10].[ext]'
+                    name: '[hash:10].[ext]'
                 }
             },
             {
-                test:/\.html$/,
+                test: /\.html$/,
                 //处理html文件的img图片(负责引入img,从而能被url-loader处理)
-                loader:'html-loader',
+                loader: 'html-loader',
+                options: {
+                    esModule: false
+                }
+            },
+            //打包其他资源(除指定以外的一资源)
+            {
+                exclude: /\.(css|js|html|less|jpg|png|gif|json)$/,
+                loader: 'file-loader',
                 options:{
-                    esModule:false
+                    name: '[hash:10].[ext]'
                 }
             }
         ]
@@ -87,10 +95,22 @@ module.exports = {
         //需求:需要有结构的html
         new htmlWebpackPlugin({
             //复制指定路径的html文件，并自动引入资源
-            template:'./src/index.html'
+            template: './src/index.html'
         })
     ],
     //模式
     mode: 'development', //开发模式
     //mode:'production',
+
+    //开发服务器 devServer:用来自动化(自动编译，自动打开浏览器，自动刷新浏览器)
+    //特点:只会在内存中编译打包，而不会有任何输出
+    //启动devServe指令为:npx webpack-dev-server
+    devServer: {
+        contentBase:resolve(__dirname,'build'),
+        //启动gzip压缩
+        compress:true,
+        port:3000,
+        //自动打开浏览器
+        open:true
+    }
 }
