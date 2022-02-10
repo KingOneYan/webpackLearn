@@ -9,6 +9,8 @@ const {resolve} = require('path')
 const htmlWebpackPlugin = require('html-webpack-plugin') // 构造函数
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // process.env.NODE_ENV='development' // 临时设置nodejs环境变量
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
+
 module.exports = {
     //webpack配置
     //入口七点
@@ -132,7 +134,9 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: 'css/[name].css',
             ignoreOrder: true
-        })
+        }),
+        //压缩css
+        new OptimizeCssAssetsWebpackPlugin()
     ],
     //模式
     mode: 'development', //开发模式
