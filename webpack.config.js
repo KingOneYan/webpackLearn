@@ -4,9 +4,10 @@
  loader: 1.下载,2.配置
  plugins: 1.下载 2.引入 3.使用
  */
-//resolve用来拼接绝对路径的方法
+//resolve用来拼接绝对路径的方法,而join的话是相对路径
 const {resolve} = require('path')
 const htmlWebpackPlugin = require('html-webpack-plugin') // 构造函数
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 module.exports = {
     //webpack配置
     //入口七点
@@ -14,7 +15,7 @@ module.exports = {
     //输出
     output: {
         //输出文件名
-        filename: 'built.js',
+        filename: 'js/built.js',
         //输出路径
         //_dirname ->nodejs的变量,代表当前文件的目录绝对路径
         path: resolve(__dirname, 'build')
@@ -29,10 +30,20 @@ module.exports = {
                 //使用哪些loader进行处理，使用多个loader要用use
                 use: [
                     //use数组中loader执行顺序:从右到左，从下到上 依次执行
-                    //创建style标签,将js中的样式资源插入进行，添加到header中生效
-                    'style-loader',
-                    //将css文件以字符串的形式变成commonjs模块加载js中
-                    'css-loader'
+                    //style-loader创建style标签,将js中的样式资源插入进行，添加到header中生效
+                    // 'style-loader',
+                    //使用minicss插件不能使用styleLoader
+                    //提取js中的css成单独文件
+                    MiniCssExtractPlugin.loader,
+                    //css-loader将css文件以字符串的形式变成commonjs模块加载js中
+                    'css-loader',
+                    /*
+                    * css兼容性处理: postcss --> postcss-loader postcss-preset-env
+                    * 帮助postcss找到package.json中browserslist里面的配置，通过
+                    * 配置加载指定的css兼容性样式
+                    * */
+                    //使用loader的默认配置
+                    'postcss-loader'
                 ]
             },
             {
@@ -59,14 +70,16 @@ module.exports = {
                     //因此一般8-12kb使用base64解析会比较好
                     limit: 8 * 1024,
                     //问题：因为url-loader默认使用es6模块化解析，而html-loader引入图片是commonjs
-                    //解析会出问题：[object Module]
+                    //解析会出问题：<img src=[object Module]>
                     //解决:关闭url-loader的es6模块话，使用commonjs解析
                     //ps：新版本webpack已经解决了这个问题，但是会出现图片路径无法识别的问题(oﾟvﾟ)ノ
                     //解决方案：在html-loader与url-loader都配置esModule:false
                     esModule: false,
                     //给图片重命名
                     //[hash:10]去图片的hash前10位
-                    name: '[hash:10].[ext]'
+                    //[ext]-> 扩展名
+                    name: '[hash:10].[ext]',
+                    outputPath:'imgs'
                 }
             },
             {
@@ -82,7 +95,8 @@ module.exports = {
                 exclude: /\.(css|js|html|less|jpg|png|gif|json)$/,
                 loader: 'file-loader',
                 options:{
-                    name: '[hash:10].[ext]'
+                    name: '[hash:10].[ext]',
+                    outputPath:'media'
                 }
             }
         ]
@@ -96,7 +110,12 @@ module.exports = {
         new htmlWebpackPlugin({
             //复制指定路径的html文件，并自动引入资源
             template: './src/index.html'
-        })
+        }),
+        new MiniCssExtractPlugin({
+            filename: 'css/[name].css',
+            ignoreOrder: true
+        }),
+        require('postcss-preset-env')
     ],
     //模式
     mode: 'development', //开发模式
