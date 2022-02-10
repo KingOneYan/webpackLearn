@@ -8,6 +8,7 @@
 const {resolve} = require('path')
 const htmlWebpackPlugin = require('html-webpack-plugin') // 构造函数
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+// process.env.NODE_ENV='development' // 临时设置nodejs环境变量
 module.exports = {
     //webpack配置
     //入口七点
@@ -43,13 +44,30 @@ module.exports = {
                     * 配置加载指定的css兼容性样式
                     * */
                     //使用loader的默认配置
-                    'postcss-loader'
+                    // 'postcss-loader'
+                    {
+                        loader: 'postcss-loader',
+                        options: {
+                            // ident: 'postcss', // webpack5不需要加这个
+                            postcssOptions: {
+                                //或者将插件引入写在单独的配置js中
+                                //config: './config/postcss.config.js',
+                                plugins: [
+                                    require('postcss-preset-env')
+                                ]
+                                //不出现兼容性代码的写法，估计是webpack4写法
+                                // plugins: () => [
+                                //   require('postcss-preset-env')()
+                                // ]
+                            }
+                        }
+                    }
                 ]
             },
             {
                 test: /\.less/,
                 use: [
-                    'style-loader',
+                    MiniCssExtractPlugin.loader,
                     'css-loader',
                     //将less文件编译成css文件
                     //需要下载less-loader和less
@@ -114,8 +132,7 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: 'css/[name].css',
             ignoreOrder: true
-        }),
-        require('postcss-preset-env')
+        })
     ],
     //模式
     mode: 'development', //开发模式
@@ -124,6 +141,7 @@ module.exports = {
     //开发服务器 devServer:用来自动化(自动编译，自动打开浏览器，自动刷新浏览器)
     //特点:只会在内存中编译打包，而不会有任何输出
     //启动devServe指令为:npx webpack-dev-server
+    //webpack-cli4v以上的本地服务器的启动命令为  webpack serve  否则报找不到 webpack-cli的错误
     devServer: {
         contentBase:resolve(__dirname,'build'),
         //启动gzip压缩
