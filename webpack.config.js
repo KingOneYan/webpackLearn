@@ -9,8 +9,10 @@ const {resolve} = require('path')
 const htmlWebpackPlugin = require('html-webpack-plugin') // 构造函数
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // process.env.NODE_ENV='development' // 临时设置nodejs环境变量
+//压缩css
 const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
-
+const path = require("path");
+const ESLintPlugin = require('eslint-webpack-plugin')
 module.exports = {
     //webpack配置
     //入口七点
@@ -100,7 +102,8 @@ module.exports = {
                     //[ext]-> 扩展名
                     name: '[hash:10].[ext]',
                     outputPath:'imgs'
-                }
+                },
+                type: 'javascript/auto' // webpack5某些版本要加
             },
             {
                 test: /\.html$/,
@@ -136,7 +139,12 @@ module.exports = {
             ignoreOrder: true
         }),
         //压缩css
-        new OptimizeCssAssetsWebpackPlugin()
+        new OptimizeCssAssetsWebpackPlugin(),
+        new ESLintPlugin({
+            extensions: [`js`, `vue`],
+            exclude: [`/node_modules/`],
+            fix: true
+        })
     ],
     //模式
     mode: 'development', //开发模式
